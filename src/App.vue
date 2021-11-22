@@ -8,9 +8,20 @@
     <span style="color: red">
       <strong>Completed</strong> : {{ completedTodos }}
     </span>
-    <todo-add
+    <my-modal 
+      v-if="show"
       @addTodo="addTodoHandler"
+      @showModal="showModal" 
     />
+    <button 
+      class="btn btn-create"  
+      @click="showModal" 
+      v-else
+    >
+      Create Todo
+    </button>
+
+    <h3 v-if="isLoading">Loading...</h3>
     <todo-list 
       v-if="todos.length > 0"
       :todos="todos"
@@ -18,22 +29,20 @@
       @completeTodo="completeTodoHandler"
     />
     <h2 v-else style="text-align: center">Todos for today 0</h2>
-
   </div>
 </template>
   
 <script>
 import TodoAdd from './components/TodoAdd.vue'
 import TodoList from './components/TodoList.vue'
-
+import MyModal from './components/UI/MyModal.vue'
+import axios from 'axios'
   export default{
     data(){
       return {
-        todos: [
-          {id: 1, title: 'Hello', completed: true},
-          {id: 2, title: 'Vue', completed: false},
-          {id: 3, title: 'Easy-vue', completed: false}
-        ],
+        todos: [],
+        show: false,
+        isLoading: true
       }
     },
     computed: {
@@ -46,8 +55,12 @@ import TodoList from './components/TodoList.vue'
     components: {
       TodoList,
       TodoAdd,
+        MyModal,
     },
     methods: {
+      showModal(){
+        this.show = !this.show
+      },
       removeTodoHandler(id){
         this.todos = this.todos.filter(todo => todo.id !== id)
       },
@@ -63,11 +76,12 @@ import TodoList from './components/TodoList.vue'
         this.todos.push(todo)
       }
     },
-    created(){
-      // fetch('https://jsonplaceholder.typicode.com/todos/')
-      //   .then(response => response.json())
-      //   .then(json => console.log(json))
-        
+    async created(){
+      setTimeout(async () => {
+        const todos = await axios('https://jsonplaceholder.typicode.com/todos?&_limit=10')
+        this.todos = todos.data
+        this.isLoading = false
+      }, 3000)
     }
   }
 </script>
@@ -86,6 +100,19 @@ body{
 h1{
   margin: 10px 0;
   text-align: center;
+}
+.btn {
+  width: 100%;
+  height: 40px;
+  background: transparent;
+  transition: all 300ms linear;
+  border: 1px solid rgb(108, 91, 199);
+  color: rgb(108, 91, 199);
+  cursor: pointer;
+}
+.btn:hover{
+  background-color: rgb(108, 91, 199);
+  color: #fff;
 }
 #app{
   width: 500px;
